@@ -32,8 +32,11 @@ export function CampaignAnalyzer() {
     if (!companyName.trim()) return
 
     setLoading(true)
+    console.log('Starting analysis for:', companyName)
+    
     try {
       // Generate mock data using AI for demonstration
+      console.log('Generating campaign analysis...')
       const { object: mockAnalysis } = await blink.ai.generateObject({
         prompt: `Generate realistic social media campaign analysis data for ${companyName}${competitorMode ? ' and its main competitors' : ''}. Include 8-12 campaigns with realistic metrics, engagement rates, and performance data. Make the data varied and realistic for a ${competitorMode ? 'competitive analysis' : 'company analysis'}.`,
         schema: {
@@ -79,7 +82,10 @@ export function CampaignAnalyzer() {
         }
       })
 
+      console.log('Campaign analysis generated:', mockAnalysis)
+
       // Generate AI insights
+      console.log('Generating AI insights...')
       const { object: aiInsights } = await blink.ai.generateObject({
         prompt: `Based on the campaign analysis for ${companyName}, generate 5-7 actionable AI insights covering performance optimization, audience targeting, content strategy, timing, and budget allocation. Make them specific and actionable.`,
         schema: {
@@ -104,11 +110,14 @@ export function CampaignAnalyzer() {
         }
       })
 
+      console.log('AI insights generated:', aiInsights)
+
       const analysisData = mockAnalysis as CompanyAnalysis
       analysisData.bestPerformingCampaign = analysisData.campaigns.reduce((best, current) => 
         current.engagementRate > best.engagementRate ? current : best
       )
 
+      console.log('Setting analysis data:', analysisData)
       setAnalysis(analysisData)
       setInsights(aiInsights.insights)
 
@@ -213,9 +222,158 @@ export function CampaignAnalyzer() {
         }
       })
 
+      console.log('Paid posts generated:', paidPostsData)
       setPaidPosts(paidPostsData.paidPosts)
+      
+      console.log('Analysis complete!')
     } catch (error) {
       console.error('Error analyzing campaigns:', error)
+      
+      // Fallback to mock data if AI generation fails
+      console.log('Using fallback mock data...')
+      const fallbackAnalysis: CompanyAnalysis = {
+        companyName: companyName,
+        totalCampaigns: 8,
+        avgEngagementRate: 4.2,
+        totalReach: 2500000,
+        totalImpressions: 8750000,
+        bestPerformingCampaign: {
+          id: '1',
+          companyName: companyName,
+          platform: 'instagram',
+          title: `${companyName} Summer Collection Launch`,
+          description: 'Showcasing the latest summer collection with vibrant visuals',
+          imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+          engagementRate: 6.8,
+          reach: 450000,
+          impressions: 1200000,
+          clicks: 28000,
+          shares: 3200,
+          comments: 1800,
+          likes: 42000,
+          ctr: 2.3,
+          cpm: 4.50,
+          roi: 3.2,
+          budget: 15000,
+          startDate: '2024-06-01',
+          endDate: '2024-06-30',
+          objective: 'Brand awareness and product promotion',
+          targetAudience: 'Adults 25-45 interested in fashion',
+          createdAt: '2024-06-01T00:00:00Z',
+          updatedAt: '2024-06-30T23:59:59Z'
+        },
+        campaigns: [
+          {
+            id: '1',
+            companyName: companyName,
+            platform: 'instagram',
+            title: `${companyName} Summer Collection Launch`,
+            description: 'Showcasing the latest summer collection with vibrant visuals',
+            imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400',
+            engagementRate: 6.8,
+            reach: 450000,
+            impressions: 1200000,
+            clicks: 28000,
+            shares: 3200,
+            comments: 1800,
+            likes: 42000,
+            ctr: 2.3,
+            cpm: 4.50,
+            roi: 3.2,
+            budget: 15000,
+            startDate: '2024-06-01',
+            endDate: '2024-06-30',
+            objective: 'Brand awareness and product promotion',
+            targetAudience: 'Adults 25-45 interested in fashion',
+            createdAt: '2024-06-01T00:00:00Z',
+            updatedAt: '2024-06-30T23:59:59Z'
+          },
+          {
+            id: '2',
+            companyName: companyName,
+            platform: 'facebook',
+            title: `${companyName} Customer Stories`,
+            description: 'Real customer testimonials and success stories',
+            imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400',
+            engagementRate: 5.4,
+            reach: 380000,
+            impressions: 950000,
+            clicks: 22000,
+            shares: 2800,
+            comments: 1200,
+            likes: 35000,
+            ctr: 2.1,
+            cpm: 3.80,
+            roi: 2.8,
+            budget: 12000,
+            startDate: '2024-05-15',
+            endDate: '2024-06-15',
+            objective: 'Build trust and credibility',
+            targetAudience: 'Existing customers and prospects',
+            createdAt: '2024-05-15T00:00:00Z',
+            updatedAt: '2024-06-15T23:59:59Z'
+          },
+          {
+            id: '3',
+            companyName: companyName,
+            platform: 'tiktok',
+            title: `${companyName} Behind the Scenes`,
+            description: 'Fun behind-the-scenes content showing company culture',
+            imageUrl: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400',
+            engagementRate: 8.2,
+            reach: 620000,
+            impressions: 1800000,
+            clicks: 45000,
+            shares: 5600,
+            comments: 3200,
+            likes: 68000,
+            ctr: 2.5,
+            cpm: 2.20,
+            roi: 4.1,
+            budget: 8000,
+            startDate: '2024-07-01',
+            endDate: '2024-07-15',
+            objective: 'Increase brand awareness among Gen Z',
+            targetAudience: 'Ages 16-28, entertainment interests',
+            createdAt: '2024-07-01T00:00:00Z',
+            updatedAt: '2024-07-15T23:59:59Z'
+          }
+        ]
+      }
+
+      const fallbackInsights: AIInsight[] = [
+        {
+          id: '1',
+          type: 'performance',
+          title: 'Optimize TikTok Content Strategy',
+          description: 'TikTok campaigns show 8.2% engagement rate, significantly higher than other platforms',
+          recommendation: 'Increase TikTok budget allocation by 30% and create more behind-the-scenes content',
+          impact: 'high',
+          confidence: 87
+        },
+        {
+          id: '2',
+          type: 'audience',
+          title: 'Expand Instagram Reach',
+          description: 'Instagram campaigns have strong performance but limited reach compared to potential',
+          recommendation: 'Broaden targeting to include lookalike audiences based on top performers',
+          impact: 'medium',
+          confidence: 73
+        },
+        {
+          id: '3',
+          type: 'timing',
+          title: 'Optimize Posting Schedule',
+          description: 'Analysis shows peak engagement occurs during evening hours',
+          recommendation: 'Schedule posts between 6-9 PM for maximum engagement',
+          impact: 'medium',
+          confidence: 81
+        }
+      ]
+
+      setAnalysis(fallbackAnalysis)
+      setInsights(fallbackInsights)
+      setPaidPosts([])
     } finally {
       setLoading(false)
     }
