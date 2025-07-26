@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { CampaignAnalyzer } from '@/components/CampaignAnalyzer'
+import { Toaster } from '@/components/ui/toaster'
 import { blink } from '@/blink/client'
 
 function App() {
@@ -36,7 +37,12 @@ function App() {
     )
   }
 
-  return <CampaignAnalyzer />
+  return (
+    <>
+      <CampaignAnalyzer />
+      <Toaster />
+    </>
+  )
 }
 
 export default App

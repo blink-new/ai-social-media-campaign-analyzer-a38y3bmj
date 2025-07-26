@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, TrendingUp, Users, Eye, MousePointer, Share2, MessageCircle, Heart, DollarSign, Calendar, Target, Sparkles, Building2, BarChart3, Filter, Download, RefreshCw } from 'lucide-react'
+import { Search, TrendingUp, Users, Eye, MousePointer, Share2, MessageCircle, Heart, DollarSign, Calendar, Target, Sparkles, Building2, BarChart3, Filter, Download, RefreshCw, PieChart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { blink } from '@/blink/client'
+import { CampaignCharts } from './CampaignCharts'
+import { ExportDialog } from './ExportDialog'
 import type { Campaign, CompanyAnalysis, AIInsight } from '@/types/campaign'
 
 export function CampaignAnalyzer() {
@@ -179,11 +181,15 @@ export function CampaignAnalyzer() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button variant="outline" size="sm">
+              {analysis && (
+                <ExportDialog analysis={analysis} insights={insights}>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </ExportDialog>
+              )}
+              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
@@ -362,10 +368,19 @@ export function CampaignAnalyzer() {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Campaigns List */}
-              <div className="lg:col-span-2">
-                <Card>
+            {/* Tabs for different views */}
+            <Tabs defaultValue="campaigns" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+                <TabsTrigger value="charts">Analytics</TabsTrigger>
+                <TabsTrigger value="insights">AI Insights</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="campaigns" className="space-y-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Campaigns List */}
+                  <div className="lg:col-span-2">
+                    <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
@@ -562,50 +577,98 @@ export function CampaignAnalyzer() {
                 </Card>
               </div>
 
-              {/* AI Insights */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    <span>AI Insights</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Actionable recommendations based on campaign analysis
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {insights.map((insight) => (
-                      <div key={insight.id} className="p-3 rounded-lg border bg-card/50">
-                        <div className="flex items-start space-x-3">
-                          <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                  {/* AI Insights */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <span>AI Insights</span>
+                      </CardTitle>
+                      <CardDescription>
+                        Actionable recommendations based on campaign analysis
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {insights.map((insight) => (
+                          <div key={insight.id} className="p-3 rounded-lg border bg-card/50">
+                            <div className="flex items-start space-x-3">
+                              <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                                {getInsightIcon(insight.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <h4 className="font-medium text-sm">{insight.title}</h4>
+                                  <Badge 
+                                    variant={insight.impact === 'high' ? 'default' : insight.impact === 'medium' ? 'secondary' : 'outline'}
+                                    className="text-xs"
+                                  >
+                                    {insight.impact}
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground mb-2">{insight.description}</p>
+                                <p className="text-xs font-medium text-primary">{insight.recommendation}</p>
+                                <div className="flex items-center space-x-1 mt-2">
+                                  <div className="text-xs text-muted-foreground">Confidence:</div>
+                                  <Progress value={insight.confidence} className="flex-1 h-1" />
+                                  <div className="text-xs font-medium">{insight.confidence}%</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="charts" className="space-y-0">
+                <CampaignCharts campaigns={analysis.campaigns} companyName={analysis.companyName} />
+              </TabsContent>
+
+              <TabsContent value="insights" className="space-y-0">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {insights.map((insight) => (
+                    <Card key={insight.id}>
+                      <CardHeader>
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 rounded-md bg-primary/10 text-primary">
                             {getInsightIcon(insight.type)}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h4 className="font-medium text-sm">{insight.title}</h4>
+                          <div>
+                            <CardTitle className="text-lg">{insight.title}</CardTitle>
+                            <div className="flex items-center space-x-2 mt-1">
                               <Badge 
                                 variant={insight.impact === 'high' ? 'default' : insight.impact === 'medium' ? 'secondary' : 'outline'}
-                                className="text-xs"
                               >
-                                {insight.impact}
+                                {insight.impact} impact
                               </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-2">{insight.description}</p>
-                            <p className="text-xs font-medium text-primary">{insight.recommendation}</p>
-                            <div className="flex items-center space-x-1 mt-2">
-                              <div className="text-xs text-muted-foreground">Confidence:</div>
-                              <Progress value={insight.confidence} className="flex-1 h-1" />
-                              <div className="text-xs font-medium">{insight.confidence}%</div>
+                              <span className="text-sm text-muted-foreground">
+                                {insight.confidence}% confidence
+                              </span>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">{insight.description}</p>
+                        <div className="p-3 rounded-lg bg-primary/5 border-l-4 border-primary">
+                          <p className="text-sm font-medium text-primary">{insight.recommendation}</p>
+                        </div>
+                        <div className="mt-4">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                            <span>Confidence Level</span>
+                            <span>{insight.confidence}%</span>
+                          </div>
+                          <Progress value={insight.confidence} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         )}
 
