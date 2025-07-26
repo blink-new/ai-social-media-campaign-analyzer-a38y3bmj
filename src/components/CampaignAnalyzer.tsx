@@ -271,49 +271,35 @@ export function CampaignAnalyzer() {
     }) || []
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Campaign Analyzer</h1>
-                <p className="text-sm text-muted-foreground">AI-powered social media campaign insights</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              {analysis && (
-                <ExportDialog analysis={analysis} insights={insights}>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                </ExportDialog>
-              )}
-              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Section */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Search className="h-5 w-5" />
-              <span>Analyze Campaigns</span>
-            </CardTitle>
-            <CardDescription>
-              Enter a company name to analyze their top-performing social media campaigns
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <Search className="h-5 w-5" />
+                  <span>Analyze Campaigns</span>
+                </CardTitle>
+                <CardDescription>
+                  Enter a company name to analyze their top-performing social media campaigns
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-2">
+                {analysis && (
+                  <ExportDialog analysis={analysis} insights={insights}>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </ExportDialog>
+                )}
+                <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center space-x-4">
@@ -809,6 +795,5 @@ export function CampaignAnalyzer() {
           </div>
         )}
       </div>
-    </div>
   )
 }
