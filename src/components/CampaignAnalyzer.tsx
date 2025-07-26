@@ -14,7 +14,8 @@ import { Progress } from '@/components/ui/progress'
 import { blink } from '@/blink/client'
 import { CampaignCharts } from './CampaignCharts'
 import { ExportDialog } from './ExportDialog'
-import type { Campaign, CompanyAnalysis, AIInsight } from '@/types/campaign'
+import PaidPostsAnalysis from './PaidPostsAnalysis'
+import type { Campaign, CompanyAnalysis, AIInsight, PaidPost } from '@/types/campaign'
 
 export function CampaignAnalyzer() {
   const [companyName, setCompanyName] = useState('')
@@ -22,6 +23,7 @@ export function CampaignAnalyzer() {
   const [loading, setLoading] = useState(false)
   const [analysis, setAnalysis] = useState<CompanyAnalysis | null>(null)
   const [insights, setInsights] = useState<AIInsight[]>([])
+  const [paidPosts, setPaidPosts] = useState<PaidPost[]>([])
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const [sortBy, setSortBy] = useState<'engagement' | 'reach' | 'roi'>('engagement')
   const [filterPlatform, setFilterPlatform] = useState<string>('all')
@@ -109,6 +111,109 @@ export function CampaignAnalyzer() {
 
       setAnalysis(analysisData)
       setInsights(aiInsights.insights)
+
+      // Generate paid posts data
+      const { object: paidPostsData } = await blink.ai.generateObject({
+        prompt: `Generate 6-8 top-performing paid social media posts for ${companyName} with realistic engagement metrics, detailed comments from users (including influencers and verified accounts), and sentiment analysis. Include diverse ad types and platforms.`,
+        schema: {
+          type: 'object',
+          properties: {
+            paidPosts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  campaignId: { type: 'string' },
+                  title: { type: 'string' },
+                  content: { type: 'string' },
+                  imageUrl: { type: 'string' },
+                  platform: { type: 'string', enum: ['facebook', 'instagram', 'twitter', 'linkedin', 'tiktok', 'youtube'] },
+                  adType: { type: 'string', enum: ['image', 'video', 'carousel', 'story', 'collection'] },
+                  targetAudience: { type: 'string' },
+                  budget: { type: 'number' },
+                  spend: { type: 'number' },
+                  impressions: { type: 'number' },
+                  clicks: { type: 'number' },
+                  conversions: { type: 'number' },
+                  engagement: { type: 'number' },
+                  ctr: { type: 'number' },
+                  cpm: { type: 'number' },
+                  cpc: { type: 'number' },
+                  roi: { type: 'number' },
+                  createdAt: { type: 'string' },
+                  metrics: {
+                    type: 'object',
+                    properties: {
+                      likes: { type: 'number' },
+                      shares: { type: 'number' },
+                      comments: { type: 'number' },
+                      saves: { type: 'number' },
+                      reactions: { type: 'number' }
+                    }
+                  },
+                  comments: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        author: { type: 'string' },
+                        authorAvatar: { type: 'string' },
+                        content: { type: 'string' },
+                        likes: { type: 'number' },
+                        replies: { type: 'number' },
+                        timestamp: { type: 'string' },
+                        sentiment: { type: 'string', enum: ['positive', 'negative', 'neutral'] },
+                        verified: { type: 'boolean' },
+                        followerCount: { type: 'number' },
+                        isInfluencer: { type: 'boolean' }
+                      }
+                    }
+                  },
+                  topComments: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        author: { type: 'string' },
+                        authorAvatar: { type: 'string' },
+                        content: { type: 'string' },
+                        likes: { type: 'number' },
+                        replies: { type: 'number' },
+                        timestamp: { type: 'string' },
+                        sentiment: { type: 'string', enum: ['positive', 'negative', 'neutral'] },
+                        verified: { type: 'boolean' },
+                        followerCount: { type: 'number' },
+                        isInfluencer: { type: 'boolean' }
+                      }
+                    }
+                  },
+                  commentSentiment: {
+                    type: 'object',
+                    properties: {
+                      positive: { type: 'number' },
+                      negative: { type: 'number' },
+                      neutral: { type: 'number' }
+                    }
+                  },
+                  audienceInsights: {
+                    type: 'object',
+                    properties: {
+                      topDemographics: { type: 'array', items: { type: 'string' } },
+                      engagementByAge: { type: 'object' },
+                      topLocations: { type: 'array', items: { type: 'string' } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+
+      setPaidPosts(paidPostsData.paidPosts)
     } catch (error) {
       console.error('Error analyzing campaigns:', error)
     } finally {
@@ -370,8 +475,9 @@ export function CampaignAnalyzer() {
 
             {/* Tabs for different views */}
             <Tabs defaultValue="campaigns" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+                <TabsTrigger value="paid-posts">Paid Posts</TabsTrigger>
                 <TabsTrigger value="charts">Analytics</TabsTrigger>
                 <TabsTrigger value="insights">AI Insights</TabsTrigger>
               </TabsList>
@@ -621,6 +727,10 @@ export function CampaignAnalyzer() {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="paid-posts" className="space-y-0">
+                <PaidPostsAnalysis companyName={analysis.companyName} paidPosts={paidPosts} />
               </TabsContent>
 
               <TabsContent value="charts" className="space-y-0">
